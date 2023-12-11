@@ -2,6 +2,8 @@ import test, { expect } from "@playwright/test";
 
 const ACTION_CALLBACK_TYPE = "action_callback";
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 test('Get device info (system, actions, config)', async({ request }) => {
     const info = await request.get('/info/system');
     expect(info.ok()).toBeTruthy();
@@ -106,7 +108,8 @@ test('Test callbacks (create, get, update, delete)', async({ request }) => {
 
     const createResponse = await request.post('/callback', { data: callback });
     expect(createResponse.ok(), "Action callback created").toBeTruthy();
-    const { id } = await createResponse.json();
+    const body = await createResponse.json();
+    const id = Number(body.id);
     expect(id, "Callback id not empty").not.toBeUndefined();
 
     const createdCallback = await request.get('/callback/by/id', { params: {
