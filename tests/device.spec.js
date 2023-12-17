@@ -2,8 +2,6 @@ import test, { expect } from "@playwright/test";
 
 const ACTION_CALLBACK_TYPE = "action_callback";
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 test('Get device info (system, actions, config)', async({ request }) => {
     const info = await request.get('/info/system');
     expect(info.ok()).toBeTruthy();
@@ -24,6 +22,18 @@ test('Get device info (system, actions, config)', async({ request }) => {
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Correct config info format")
         .toEqual(expect.any(Object));
+});
+
+test('Update device name', async ({ request }) => {
+    const name = "autotest_" +  Math.floor(Math.random() * 100);
+    const updateResponse = await request.put('/info/system', { data: {
+        name
+    }});
+    expect(updateResponse.ok(), "Name updated").toBeTruthy();
+
+    const info = await request.get('/info/system');
+    expect(info.ok()).toBeTruthy();
+    expect((await info.json()).name === name, "New name saved").toBeTruthy();
 });
 
 test('Test device configuration (add, get, delete)', async({ request }) => {
@@ -54,15 +64,17 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
     expect(deleteWrongKey.status()).toEqual(404);
 });
 
-test('Perform action (first from the actions list)', async ({ request }) => {
+test('Perform actions', async ({ request }) => {
     const actionsResponse = await request.get('/info/actions');
     expect(actionsResponse.ok()).toBeTruthy();
     const actions = Object.keys(await actionsResponse.json());
-    expect(actions.length !== 0, "Got configured action").toBeTruthy();
-    const performAction = await request.put('/action', { params: {
-        action: actions[0]
-    }});
-    expect(performAction.ok(), "Action " + actions[0] + " performed").toBeTruthy();
+    expect(actions.length !== 0, "Got configured actions").toBeTruthy();
+    for (const action of actions) {
+        const performAction = await request.put('/action', { params: {
+            action
+        }});
+        expect(performAction.ok(), "Action " + action + " performed").toBeTruthy();
+    }
 });
 
 test('Get device sensors', async ({ request }) => {
@@ -102,7 +114,7 @@ test('Test callbacks (create, get, update, delete)', async({ request }) => {
             type: ACTION_CALLBACK_TYPE,
             action: actions[0],
             compareType: "eq",
-            trigger: "1"
+            trigger: "autotest"
         }
     };
 
@@ -110,10 +122,10 @@ test('Test callbacks (create, get, update, delete)', async({ request }) => {
     expect(createResponse.ok(), "Action callback created").toBeTruthy();
     const body = await createResponse.json();
     const id = Number(body.id);
-    expect(id, "Callback id not empty").not.toBeUndefined();
+    expect(id, "Created callback id=" + id).not.toBeUndefined();
 
     const createdCallback = await request.get('/callback/by/id', { params: {
-        observableType: callback.observable.type,
+        type: callback.observable.type,
         name: callback.observable.name,
         id
     }});
@@ -135,7 +147,7 @@ test('Test callbacks (create, get, update, delete)', async({ request }) => {
     expect(updateResponse, "Callback updated").toBeTruthy();
     
     const updatedCallback = await request.get('/callback/by/id', { params: {
-        observableType: callback.observable.type,
+        type: callback.observable.type,
         name: callback.observable.name,
         id
     }});
@@ -148,7 +160,7 @@ test('Test callbacks (create, get, update, delete)', async({ request }) => {
     ));
 
     const deleteResponse = await request.delete('/callback', { params: {
-        observableType: callback.observable.type,
+        type: callback.observable.type,
         name: callback.observable.name,
         id
     }});
