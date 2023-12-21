@@ -48,7 +48,7 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
 
     const config = await request.get('/config');
     expect(config.ok()).toBeTruthy();
-    expect(await config.json(), "Contains new values")
+    expect(await config.json(), "Config contains new values")
         .toEqual(expect.objectContaining(values));
 
     for (const key of Object.keys(values)) {

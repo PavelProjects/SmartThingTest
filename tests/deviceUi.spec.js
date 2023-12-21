@@ -5,22 +5,30 @@ test.beforeEach('Open control panel', async ({ page }) => {
 })
 
 test('Information tab', async ({ page }) => {
+  let toastId = 0;
   const respInfo = page.waitForResponse((response) => response.url().endsWith("/info/system"));
   await page.getByTestId("info").click();
-  await expect(page.getByRole("heading", { name: "Device information" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Device information" }), "Info tab opened").toBeVisible();
 
   await respInfo;
   await expect(page.locator(".field-label"), "Information fields present")
     .toHaveText(["Device name", "Device type", "Firmware version", "Chip model", "Chip revision"]);
 
+  const nameInput = page.getByTestId("device-name");
+  const saveBtn = page.getByTestId("save-device-name");
+  
+  await nameInput.clear();
+  await saveBtn.click();
+  await expect(page.getByTestId("toast-" + toastId++ + "-caption"), "Name can't be empty").toHaveText("Device name can't be empty!");
+
   const name = "autotest_" + Math.floor(Math.random() * 100);
-  await page.getByTestId("device-name").fill(name);
+  await nameInput.fill(name);
 
   const response = page.waitForResponse((response) => response.url().endsWith("/info/system"));
-  await page.getByTestId("save-device-name").click();
-  await response;
+  await saveBtn.click();
+  expect((await response).ok()).toBeTruthy();;
 
-  await expect(page.getByTestId("toast-description"), "Name updated").toHaveText("New device name: " + name);
+  await expect(page.getByTestId("toast-" + toastId++ + "-description"), "Name updated").toHaveText("New device name: " + name);
 });
 
 test('Actions and states tab', async ({ page }) => {
