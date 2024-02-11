@@ -1,12 +1,12 @@
 import test, { expect } from "@playwright/test";
 
-const ACTION_CALLBACK_TYPE = "action_callback";
+const ACTION_HOOK_TYPE = "action_hook";
 
 test('Get device info (system, actions, config)', async({ request }) => {
     const info = await request.get('/info/system');
     expect(info.ok()).toBeTruthy();
     expect(await info.json(), "Correct info format").toMatchObject({
-        version: expect.any(Number),
+        version: expect.any(String),
         name: expect.any(String),
         type: expect.any(String),
         chip_model: expect.any(String),
@@ -89,80 +89,80 @@ test('Get device states', async ({ request }) => {
     expect(await sensors.json()).toEqual(expect.any(Object));
 });
 
-test('Test callbacks (create, get, update, delete)', async({ request }) => {
-    const templatesResponse = await request.get('/callback/template');
+test('Test hooks (create, get, update, delete)', async({ request }) => {
+    const templatesResponse = await request.get('/hooks/templates');
     expect(templatesResponse.ok()).toBeTruthy();
     const templates = await templatesResponse.json();
-    expect(templates[ACTION_CALLBACK_TYPE]).not.toBeUndefined();
-    expect(templates[ACTION_CALLBACK_TYPE].action).toEqual(expect.objectContaining({
+    expect(templates[ACTION_HOOK_TYPE]).not.toBeUndefined();
+    expect(templates[ACTION_HOOK_TYPE].action).toEqual(expect.objectContaining({
         required: expect.any(Boolean),
         values: expect.any(Object)
     }));
-    const actions = Object.keys(templates[ACTION_CALLBACK_TYPE].action.values);
+    const actions = Object.keys(templates[ACTION_HOOK_TYPE].action.values);
 
     const statesResponse = await request.get('/states');
     expect(statesResponse.ok()).toBeTruthy();
     const states = Object.keys(await statesResponse.json());
     expect(states.length !== 0).toBeTruthy();
 
-    const callback = {
+    const hook = {
         observable: {
             type: "state",
             name: states[0]
         },
-        callback: {
-            type: ACTION_CALLBACK_TYPE,
+        hook: {
+            type: ACTION_HOOK_TYPE,
             action: actions[0],
             compareType: "eq",
             trigger: "autotest"
         }
     };
 
-    const createResponse = await request.post('/callback', { data: callback });
-    expect(createResponse.ok(), "Action callback created").toBeTruthy();
+    const createResponse = await request.post('/hooks', { data: hook });
+    expect(createResponse.ok(), "Action hook created").toBeTruthy();
     const body = await createResponse.json();
     const id = Number(body.id);
-    expect(id, "Created callback id=" + id).not.toBeUndefined();
+    expect(id, "Created hook id=" + id).not.toBeUndefined();
 
-    const createdCallback = await request.get('/callback/by/id', { params: {
-        type: callback.observable.type,
-        name: callback.observable.name,
+    const createdhook = await request.get('/hooks/by/id', { params: {
+        type: hook.observable.type,
+        name: hook.observable.name,
         id
     }});
-    expect(createdCallback.ok()).toBeTruthy();
-    expect(await createdCallback.json(), "Created callback contains all values").toEqual(
+    expect(createdhook.ok()).toBeTruthy();
+    expect(await createdhook.json(), "Created hook contains all values").toEqual(
         expect.objectContaining({
-            ...callback.callback,
+            ...hook.hook,
             id
         }
     ));
 
-    callback.callback.id = id;
-    callback.callback.trigger = "2";
-    callback.callback.compareType = "neq";
+    hook.hook.id = id;
+    hook.hook.trigger = "2";
+    hook.hook.compareType = "neq";
     if (actions.length > 1) {
-        callback.callback.action = actions[1];
+        hook.hook.action = actions[1];
     }
-    const updateResponse = await request.put('/callback', { data: callback });
-    expect(updateResponse, "Callback updated").toBeTruthy();
+    const updateResponse = await request.put('/hooks', { data: hook });
+    expect(updateResponse, "hook updated").toBeTruthy();
     
-    const updatedCallback = await request.get('/callback/by/id', { params: {
-        type: callback.observable.type,
-        name: callback.observable.name,
+    const updatedhook = await request.get('/hooks/by/id', { params: {
+        type: hook.observable.type,
+        name: hook.observable.name,
         id
     }});
-    expect(updatedCallback.ok()).toBeTruthy();
-    expect(await updatedCallback.json(), "Updated callback contains all new values").toEqual(
+    expect(updatedhook.ok()).toBeTruthy();
+    expect(await updatedhook.json(), "Updated hook contains all new values").toEqual(
         expect.objectContaining({
-            ...callback.callback,
+            ...hook.hook,
             id
         }
     ));
 
-    const deleteResponse = await request.delete('/callback', { params: {
-        type: callback.observable.type,
-        name: callback.observable.name,
+    const deleteResponse = await request.delete('/hooks', { params: {
+        type: hook.observable.type,
+        name: hook.observable.name,
         id
     }});
-    expect(deleteResponse.ok(), "Callback deleted").toBeTruthy();
+    expect(deleteResponse.ok(), "hook deleted").toBeTruthy();
 });
