@@ -90,22 +90,34 @@ test('Configuration tab', async ({ page }) => {
 
   await waitResp(page.getByTestId('configuration').click())
 
-  const value = String(Math.floor(Math.random() * 100));
-  const input = page.getByTestId("test_setting");
-  await input.fill(value);
+  const feilds = [
+    { name: 'tests', value: String(Math.floor(Math.random() * 100)) },
+    { name: 'testn', value: String(Math.floor(Math.random() * 100)) },
+    { name: 'testb', value: String(Boolean(Math.floor(Math.random() * 2))) }
+  ]
+
+  for (const { name, value } of feilds) {
+    await page.getByTestId(name).fill(value);
+  }
 
   const res = await waitResp(page.getByTestId("config-save").click());
   expect(res.ok(), "Config saved").toBeTruthy();
 
   await waitResp(updateBtn.click());
-  await expect(input, "Config value present").toHaveValue(value);
+  for (const { name, value } of feilds) {
+    const input = page.getByTestId(name);
+    await expect(input, "Config value " + name + " present").toHaveValue(value);
+  }
 
   page.on('dialog', dialog => dialog.accept());
   const resDel = await waitResp(page.getByTestId("config-delete").click(), "/config/delete/all");
   expect(resDel.ok(), "Config deleted").toBeTruthy();
 
   await waitResp(updateBtn.click());
-  await expect(input, "Config clear").toBeEmpty();
+  for (const { name } of feilds) {
+    const input = page.getByTestId(name);
+    await expect(input, "Config value " + name + " clear").toBeEmpty();
+  }
 });
 
 test('Metrics tab', async ({ page }) => {
