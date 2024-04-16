@@ -90,7 +90,7 @@ test('Get device states', async ({ request }) => {
 });
 
 test('Test hooks (create, get, update, delete)', async({ request }) => {
-    const templatesResponse = await request.get('/hooks/templates');
+    const templatesResponse = await request.get('/hooks/templates?type=state');
     expect(templatesResponse.ok()).toBeTruthy();
     const templates = await templatesResponse.json();
     expect(templates[ACTION_HOOK_TYPE]).not.toBeUndefined();
