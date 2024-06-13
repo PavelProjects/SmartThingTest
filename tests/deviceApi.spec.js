@@ -38,9 +38,9 @@ test('Update device name', async ({ request }) => {
 
 test('Test device configuration (add, get, delete)', async({ request }) => {
     const values = {
-        string_v: "tehe",
-        number_v: 12,
-        boolean_v: true,
+        tests: "tehe",
+        testn: 12,
+        testb: true,
     }
 
     const addValues = await request.post('/config', { data: values });

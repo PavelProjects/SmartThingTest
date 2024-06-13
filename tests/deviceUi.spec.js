@@ -19,7 +19,8 @@ test('Information tab', async ({ page }) => {
   
   await nameInput.clear();
   await saveBtn.click();
-  await expect(page.getByTestId("toast-" + toastId++ + "-caption"), "Name can't be empty").toHaveText("Device name can't be empty!");
+  await expect(page.getByTestId("toast-" + toastId++ + "-caption"), "Name can't be empty")
+    .toHaveText("Device name can't be empty!");
 
   const name = "autotest_" + Math.floor(Math.random() * 100);
   await nameInput.fill(name);
@@ -28,7 +29,8 @@ test('Information tab', async ({ page }) => {
   await saveBtn.click();
   expect((await response).ok()).toBeTruthy();;
 
-  await expect(page.getByTestId("toast-" + toastId++ + "-description"), "Name updated").toHaveText("New device name: " + name);
+  await expect(page.getByTestId("toast-" + toastId++ + "-description"), "Name updated")
+    .toHaveText("New device name: " + name);
 });
 
 test('Actions and states tab', async ({ page }) => {
