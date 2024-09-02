@@ -9,8 +9,7 @@ test('Get device info (system, actions, config)', async({ request }) => {
         version: expect.any(String),
         name: expect.any(String),
         type: expect.any(String),
-        chip_model: expect.any(String),
-        chip_revision: expect.any(Number),
+        platform: expect.any(String),
     });
 
     const actions = await request.get('/info/actions');

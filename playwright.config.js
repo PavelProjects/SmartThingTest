@@ -25,7 +25,7 @@ export default defineConfig({
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    baseURL: "http://192.168.2.2/",
+    baseURL: "http://192.168.1.14/",
     testIdAttribute: 'id',
   },
 
