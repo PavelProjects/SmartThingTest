@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test-api": "playwright test deviceApi.spec.js "
+    "test-api": "playwright test deviceApi.spec.js",
+    "test-ui": "playwright test deviceUi.spec.js",
+    "test-full": "npm run test-api && npm run test-ui",
+    "test-debug": "playwright test --ui"
   },
   "keywords": [],
   "author": "",

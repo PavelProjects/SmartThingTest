@@ -8,11 +8,11 @@ test('Information tab', async ({ page }) => {
   let toastId = 0;
   const respInfo = page.waitForResponse((response) => response.url().endsWith("/info/system"));
   await page.getByTestId("info").click();
-  await expect(page.getByRole("heading", { name: "Device information" }), "Info tab opened").toBeVisible();
+  await expect(page.getByTestId("info-content")).toBeVisible();
 
   await respInfo;
-  await expect(page.locator(".field-label"), "Information fields present")
-    .toHaveText(["Device name", "Device type", "Firmware version", "Chip model", "Chip revision"]);
+  await expect(page.locator(".field-container").getByRole("heading"), "Information fields present")
+    .toHaveText(["Device name", "save", "Device type", "Platform", "Firmware version", "Chip model", "Chip revision"]);
 
   const nameInput = page.getByTestId("device-name");
   const saveBtn = page.getByTestId("save-device-name");
@@ -64,7 +64,7 @@ test('Actions and states tab', async ({ page }) => {
 
     await statesItem.click();
     const statesResp = page.waitForResponse((response) => response.url().endsWith("/states"));
-    await page.getByTestId('menu-main-update').click();
+    await statesItem.click();
     await statesResp;
 
     await expect(page.getByTestId('state-menu-led')).toHaveText("led: " + state);
@@ -80,7 +80,8 @@ test('Sensors tab', async ({ page }) => {
 });
 
 test('Configuration tab', async ({ page }) => {
-  const updateBtn = page.getByTestId('menu-main-update');
+  const updateBtn = page.getByTestId('configuration')
+  await updateBtn.click();
 
   const waitResp = async (action, path="/config") => {
     const response = page.waitForResponse(
