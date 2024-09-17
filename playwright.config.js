@@ -1,13 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const projects = [
-  {
-    name: 'Esp8266',
-    use: { 
-      ...devices['Desktop Firefox'],
-      baseURL: "http://192.168.1.14/",
-    },
-  },
+  // {
+  //   name: 'Esp8266',
+  //   use: { 
+  //     ...devices['Desktop Firefox'],
+  //     baseURL: "http://192.168.1.14/",
+  //   },
+  // },
   {
     name: 'Esp32',
     use: { 

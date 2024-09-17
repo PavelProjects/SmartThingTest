@@ -12,12 +12,12 @@ test('Get device info (system, actions, config)', async({ request }) => {
         platform: expect.any(String),
     });
 
-    const actions = await request.get('/info/actions');
+    const actions = await request.get('/actions/info');
     expect(actions.ok()).toBeTruthy();
     expect(await actions.json(), "Correct actions format")
         .toEqual(expect.any(Object));
 
-    const config = await request.get('/info/config');
+    const config = await request.get('/config/info');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Correct config info format")
         .toEqual(expect.any(Object));
@@ -42,10 +42,10 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
         testb: true,
     }
 
-    const addValues = await request.post('/config', { data: values });
+    const addValues = await request.post('/config/values', { data: values });
     expect(addValues.ok(), "New values added").toBeTruthy();
 
-    const config = await request.get('/config');
+    const config = await request.get('/config/values');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Config contains new values")
         .toEqual(expect.objectContaining(values));
@@ -64,7 +64,7 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
 });
 
 test('Perform actions', async ({ request }) => {
-    const actionsResponse = await request.get('/info/actions');
+    const actionsResponse = await request.get('/actions/info');
     expect(actionsResponse.ok()).toBeTruthy();
     const actions = Object.keys(await actionsResponse.json());
     expect(actions.length !== 0, "Got configured actions").toBeTruthy();
@@ -80,6 +80,10 @@ test('Get device sensors', async ({ request }) => {
     const sensors = await request.get('/sensors');
     expect(sensors.ok()).toBeTruthy();
     expect(await sensors.json()).toEqual(expect.any(Object));
+
+    const sensorsTypes = await request.get('/sensors/types');
+    expect(sensorsTypes.ok()).toBeTruthy();
+    expect(await sensorsTypes.json()).toEqual(expect.any(Object));
 });
 
 test('Get device states', async ({ request }) => {

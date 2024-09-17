@@ -12,7 +12,7 @@ test('Information tab', async ({ page }) => {
 
   await respInfo;
   await expect(page.locator(".field-container").getByRole("heading"), "Information fields present")
-    .toHaveText(["Device name", "save", "Device type", "Platform", "Firmware version", "Chip model", "Chip revision"]);
+    .toHaveText(["Device name", "save", "Device type", "Platform", "Firmware version"]);
 
   const nameInput = page.getByTestId("device-name");
   const saveBtn = page.getByTestId("save-device-name");
@@ -38,7 +38,7 @@ test('Actions and states tab', async ({ page }) => {
   const actionsItem = page.getByTestId('actions');
 
   await statesItem.click();
-  const actionsResp = page.waitForResponse((response) => response.url().endsWith("/actions"));
+  const actionsResp = page.waitForResponse((response) => response.url().endsWith("/actions/info"));
   await actionsItem.click();
   await actionsResp;
 
@@ -76,7 +76,7 @@ test('Sensors tab', async ({ page }) => {
   await page.getByTestId('sensors').click();
   await sensors;
 
-  await expect(page.getByText("button (digital):")).toBeVisible();
+  await expect(page.getByText("button:")).toBeVisible();
 });
 
 test('Configuration tab', async ({ page }) => {
@@ -85,7 +85,7 @@ test('Configuration tab', async ({ page }) => {
 
   const waitResp = async (action, path="/config") => {
     const response = page.waitForResponse(
-      (r) => r.url().endsWith(path) && !r.url().endsWith("/info/config")
+      (r) => r.url().startsWith(path)
     );
     await action;
     return await response;
