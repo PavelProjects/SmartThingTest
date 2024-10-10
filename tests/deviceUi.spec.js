@@ -12,7 +12,7 @@ test('Information tab', async ({ page }) => {
 
   await respInfo;
   await expect(page.locator(".field-container").getByRole("heading"), "Information fields present")
-    .toHaveText(["Device name", "save", "Device type", "Platform", "Firmware version"]);
+    .toHaveText(["Device name", "save", "Device type", "Ip", "Board", "Firmware version"]);
 
   const nameInput = page.getByTestId("device-name");
   const saveBtn = page.getByTestId("save-device-name");
@@ -80,24 +80,22 @@ test('Sensors tab', async ({ page }) => {
 });
 
 test('Configuration tab', async ({ page }) => {
-  const updateBtn = page.getByTestId('configuration')
-  await updateBtn.click();
-
-  const waitResp = async (action, path="/config") => {
+  const waitResp = async (action, path="/config/values") => {
     const response = page.waitForResponse(
-      (r) => r.url().startsWith(path)
+      (r) => r.url().endsWith(path)
     );
     await action;
     return await response;
   }
-
-  await waitResp(page.getByTestId('configuration').click())
 
   const feilds = [
     { name: 'tests', value: String(Math.floor(Math.random() * 100)) },
     { name: 'testn', value: String(Math.floor(Math.random() * 100)) },
     { name: 'testb', value: String(Boolean(Math.floor(Math.random() * 2))) }
   ]
+
+  const updateBtn = page.getByTestId('configuration')
+  waitResp(await updateBtn.click());
 
   for (const { name, value } of feilds) {
     await page.getByTestId(name).fill(value);
