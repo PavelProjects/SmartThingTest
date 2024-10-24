@@ -67,13 +67,13 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
 test('Perform actions', async ({ request }) => {
     const actionsResponse = await request.get('/actions/info');
     expect(actionsResponse.ok()).toBeTruthy();
-    const actions = Object.keys(await actionsResponse.json());
+    const actions = await actionsResponse.json();
     expect(actions.length !== 0, "Got configured actions").toBeTruthy();
-    for (const action of actions) {
-        const performAction = await request.put('/action', { params: {
-            action
+    for (const { name } of actions) {
+        const performAction = await request.get('/actions/call', { params: {
+            action: name
         }});
-        expect(performAction.ok(), "Action " + action + " performed").toBeTruthy();
+        expect(performAction.ok(), "Done").toBeTruthy();
     }
 });
 
