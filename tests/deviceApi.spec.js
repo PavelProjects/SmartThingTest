@@ -68,6 +68,7 @@ test('Perform actions', async ({ request }) => {
     const actionsResponse = await request.get('/actions/info');
     expect(actionsResponse.ok()).toBeTruthy();
     const actions = await actionsResponse.json();
+
     expect(actions.length !== 0, "Got configured actions").toBeTruthy();
     for (const { name } of actions) {
         const performAction = await request.get('/actions/call', { params: {
@@ -75,6 +76,21 @@ test('Perform actions', async ({ request }) => {
         }});
         expect(performAction.ok(), "Done").toBeTruthy();
     }
+
+    const name = actions[0].name
+    const callDelay = 15000
+    expect(
+        (await request.put("/actions/schedule", { data: { name, callDelay } })).ok(),
+        `Updated action's ${name} schedule delay to ${callDelay}`
+    ).toBeTruthy()
+
+    const updatedActions = await (await request.get('/actions/info')).json();
+    expect(updatedActions[0].callDelay === callDelay, "Delay update confirmed").toBeTruthy()
+
+    expect(
+        (await request.put("/actions/schedule", { data: { name, callDelay: 0 } })).ok(),
+        `Action's ${name} schedule delay removed`
+    ).toBeTruthy()
 });
 
 test('Get device sensors', async ({ request }) => {
