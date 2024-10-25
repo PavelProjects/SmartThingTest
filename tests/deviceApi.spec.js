@@ -52,13 +52,13 @@ test('Test device configuration (add, get, delete)', async({ request }) => {
         .toEqual(expect.objectContaining(values));
 
     for (const key of Object.keys(values)) {
-        const deleteKey = await request.delete('/config', { params: {
+        const deleteKey = await request.delete('/config/values', { params: {
             name: key
         }});
         expect(deleteKey.ok(), `Value key=${key} removed`).toBeTruthy();
     };
 
-    const deleteWrongKey = await request.delete('/config', { params: {
+    const deleteWrongKey = await request.delete('/config/values', { params: {
         name: "asojfsoifdjgsdf"
     }});
     expect(deleteWrongKey.status()).toEqual(404);
@@ -71,9 +71,7 @@ test('Perform actions', async ({ request }) => {
 
     expect(actions.length !== 0, "Got configured actions").toBeTruthy();
     for (const { name } of actions) {
-        const performAction = await request.get('/actions/call', { params: {
-            action: name
-        }});
+        const performAction = await request.get('/actions/call', { params: { name }});
         expect(performAction.ok(), "Done").toBeTruthy();
     }
 

@@ -12,7 +12,7 @@ test('Information tab', async ({ page }) => {
 
   await respInfo;
   await expect(page.locator(".field-container").getByRole("heading"), "Information fields present")
-    .toHaveText(["Device name", "save", "Device type", "Ip", "Board", "Firmware version"]);
+    .toHaveText(["Device name", "save", "Device type", "Ip", "Board", "SmartThing version", "Firmware version"]);
 
   const nameInput = page.getByTestId("device-name");
   const saveBtn = page.getByTestId("save-device-name");
@@ -57,7 +57,7 @@ test('Actions and states tab', async ({ page }) => {
     await actionsItem.click();
 
     const actionResp = page.waitForResponse(
-      (response) => response.url().endsWith("/actions?action=" + action)
+      (response) => response.url().endsWith("/actions/call?name=" + action)
     );
     await page.getByTestId("action_" + action).click();
     expect((await actionResp).ok()).toBeTruthy();
