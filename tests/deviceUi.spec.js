@@ -88,26 +88,39 @@ test('Configuration tab', async ({ page }) => {
     return await response;
   }
 
-  const feilds = [
+  const fields = [
     { name: 'tests', value: String(Math.floor(Math.random() * 100)) },
     { name: 'testn', value: String(Math.floor(Math.random() * 100)) },
-    { name: 'testb', value: String(Boolean(Math.floor(Math.random() * 2))) }
+    { name: 'testb', value: Boolean(Math.floor(Math.random() * 2)) }
   ]
 
   const updateBtn = page.getByTestId('configuration')
   waitResp(await updateBtn.click());
 
-  for (const { name, value } of feilds) {
-    await page.getByTestId(name).fill(value);
+  for (const { name, value } of fields) {
+    const element = page.getByTestId(name)
+    if (typeof value === 'boolean') {
+      await element.check(value);
+    } else {
+      await element.fill(value);
+    }
   }
 
   const res = await waitResp(page.getByTestId("config-save").click());
   expect(res.ok(), "Config saved").toBeTruthy();
 
   await waitResp(updateBtn.click());
-  for (const { name, value } of feilds) {
+  for (const { name, value } of fields) {
     const input = page.getByTestId(name);
-    await expect(input, "Config value " + name + " present").toHaveValue(value);
+    let ex = expect(input, "Config value " + name + " present")
+    if (typeof value === 'boolean') {
+      if (!value) {
+        ex = ex.not
+      }
+      await ex.toBeChecked();
+    } else {
+      await ex.toHaveValue(value);
+    }
   }
 
   page.on('dialog', dialog => dialog.accept());
@@ -115,9 +128,14 @@ test('Configuration tab', async ({ page }) => {
   expect(resDel.ok(), "Config deleted").toBeTruthy();
 
   await waitResp(updateBtn.click());
-  for (const { name } of feilds) {
+  for (const { name, value } of fields) {
     const input = page.getByTestId(name);
-    await expect(input, "Config value " + name + " clear").toBeEmpty();
+    const ex = expect(input, "Config value " + name + " clear")
+    if (typeof value === 'boolean') {
+      await ex.not.toBeChecked();
+    } else {
+      await ex.toBeEmpty();
+    }
   }
 });
 

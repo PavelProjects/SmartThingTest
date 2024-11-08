@@ -12,7 +12,7 @@ const projects = [
     name: 'Esp32',
     use: { 
       ...devices['Desktop Firefox'],
-      baseURL: "http://192.168.1.13/",
+      baseURL: "http://192.168.1.11/",
     },
   },
 ];

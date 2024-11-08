@@ -132,7 +132,8 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
             type: ACTION_HOOK_TYPE,
             action: actions[0],
             compareType: "eq",
-            trigger: "autotest"
+            trigger: "autotest",
+            triggerEnabled: true
         }
     };
 
