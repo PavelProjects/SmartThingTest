@@ -1,12 +1,12 @@
 import test, { expect } from "@playwright/test";
 
-const ACTION_HOOK_TYPE = "action_hook";
+const ACTION_HOOK_TYPE = "action";
 
 test('Get device info (system, actions, config)', async({ request }) => {
     const info = await request.get('/info/system');
     expect(info.ok()).toBeTruthy();
     expect(await info.json(), "Correct info format").toMatchObject({
-        version: expect.any(String),
+        stVersion: expect.any(String),
         name: expect.any(String),
         type: expect.any(String),
         ip: expect.any(String),
@@ -149,12 +149,12 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
         id
     }});
     expect(createdhook.ok()).toBeTruthy();
-    expect(await createdhook.json(), "Created hook contains all values").toEqual(
-        expect.objectContaining({
+    expect(await createdhook.json(), "Created hook contains all values").toMatchObject(
+        {
             ...hook.hook,
             id
         }
-    ));
+    );
 
     hook.hook.id = id;
     hook.hook.trigger = "2";
