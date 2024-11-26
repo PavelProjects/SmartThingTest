@@ -140,23 +140,28 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     const createResponse = await request.post('/hooks', { data: hook });
     expect(createResponse.ok(), "Action hook created").toBeTruthy();
     const body = await createResponse.json();
-    const id = Number(body.id);
-    expect(id, "Created hook id=" + id).not.toBeUndefined();
+    const createdId = Number(body.id);
+    expect(createdId, "Created hook id=" + createdId).not.toBeUndefined();
 
-    const createdhook = await request.get('/hooks/by/id', { params: {
-        type: hook.observable.type,
-        name: hook.observable.name,
-        id
-    }});
-    expect(createdhook.ok()).toBeTruthy();
-    expect(await createdhook.json(), "Created hook contains all values").toMatchObject(
+    const getHookById = async (hookId) => {
+        const hooksResponse = await request.get('/hooks/by/observable', { params: {
+            type: hook.observable.type,
+            name: hook.observable.name
+        }});
+        expect(hooksResponse.ok()).toBeTruthy();
+        const hooks = await hooksResponse.json();
+        return hooks.find(({ id }) => id === hookId)
+    }
+
+    const createdhook = await getHookById(createdId)
+    expect(createdhook, "Created hook contains all values").toMatchObject(
         {
             ...hook.hook,
-            id
+            id: createdId
         }
     );
 
-    hook.hook.id = id;
+    hook.hook.id = createdId;
     hook.hook.trigger = "2";
     hook.hook.compareType = "neq";
     if (actions.length > 1) {
@@ -165,23 +170,15 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     const updateResponse = await request.put('/hooks', { data: hook });
     expect(updateResponse, "hook updated").toBeTruthy();
     
-    const updatedhook = await request.get('/hooks/by/id', { params: {
-        type: hook.observable.type,
-        name: hook.observable.name,
-        id
-    }});
-    expect(updatedhook.ok()).toBeTruthy();
-    expect(await updatedhook.json(), "Updated hook contains all new values").toEqual(
-        expect.objectContaining({
-            ...hook.hook,
-            id
-        }
-    ));
+    const updatedhook = await getHookById(createdId)
+    expect(updatedhook, "Updated hook contains all new values").toEqual(
+        expect.objectContaining(hook.hook)
+    );
 
     const deleteResponse = await request.delete('/hooks', { params: {
         type: hook.observable.type,
         name: hook.observable.name,
-        id
+        id: createdId
     }});
     expect(deleteResponse.ok(), "hook deleted").toBeTruthy();
 });
