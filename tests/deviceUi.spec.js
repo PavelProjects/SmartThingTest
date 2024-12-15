@@ -33,11 +33,19 @@ test('Information tab', async ({ page }) => {
     .toHaveText("New device name: " + name);
 });
 
-test('Actions and states tab', async ({ page }) => {
-  const statesItem = page.getByTestId('states');
+test('Sensors tab', async ({ page }) => {
+  const sensors = page.waitForResponse((response) => response.url().endsWith("/sensors"));
+  await page.getByTestId('sensors').click();
+  await sensors;
+
+  await expect(page.getByText("button:")).toBeVisible();
+});
+
+test('Actions tab', async ({ page }) => {
+  const sensorsItem = page.getByTestId('sensors');
   const actionsItem = page.getByTestId('actions');
 
-  await statesItem.click();
+  await sensorsItem.click();
   const actionsResp = page.waitForResponse((response) => response.url().endsWith("/actions/info"));
   await actionsItem.click();
   await actionsResp;
@@ -45,15 +53,15 @@ test('Actions and states tab', async ({ page }) => {
   const actionsStates = [
     {
       action: "led_on",
-      state: "on"
+      value: "on"
     },
     {
       action: "led_off",
-      state: "off"
+      value: "off"
     },
   ];
 
-  for (const { action, state } of actionsStates) {
+  for (const { action, value } of actionsStates) {
     await actionsItem.click();
 
     const actionResp = page.waitForResponse(
@@ -62,21 +70,13 @@ test('Actions and states tab', async ({ page }) => {
     await page.getByTestId("action_" + action).click();
     expect((await actionResp).ok()).toBeTruthy();
 
-    await statesItem.click();
-    const statesResp = page.waitForResponse((response) => response.url().endsWith("/states"));
-    await statesItem.click();
-    await statesResp;
+    await sensorsItem.click();
+    const sensorsResp = page.waitForResponse((response) => response.url().endsWith("/sensors"));
+    await sensorsItem.click();
+    await sensorsResp;
 
-    await expect(page.getByTestId('state-menu-led')).toHaveText("led: " + state);
+    await expect(page.getByTestId('sensors-menu-led')).toHaveText("led: " + value);
   }
-});
-
-test('Sensors tab', async ({ page }) => {
-  const sensors = page.waitForResponse((response) => response.url().endsWith("/sensors"));
-  await page.getByTestId('sensors').click();
-  await sensors;
-
-  await expect(page.getByText("button:")).toBeVisible();
 });
 
 test('Configuration tab', async ({ page }) => {
