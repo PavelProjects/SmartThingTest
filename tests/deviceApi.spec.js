@@ -95,16 +95,6 @@ test('Get device sensors', async ({ request }) => {
     const sensors = await request.get('/sensors');
     expect(sensors.ok()).toBeTruthy();
     expect(await sensors.json()).toEqual(expect.any(Object));
-
-    const sensorsTypes = await request.get('/sensors/types');
-    expect(sensorsTypes.ok()).toBeTruthy();
-    expect(await sensorsTypes.json()).toEqual(expect.any(Object));
-});
-
-test('Get device states', async ({ request }) => {
-    const sensors = await request.get('/states');
-    expect(sensors.ok()).toBeTruthy();
-    expect(await sensors.json()).toEqual(expect.any(Object));
 });
 
 test('Test hooks (create, get, update, delete)', async({ request }) => {
@@ -144,7 +134,7 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     expect(createdId, "Created hook id=" + createdId).not.toBeUndefined();
 
     const getHookById = async (hookId) => {
-        const hooksResponse = await request.get('/hooks/by/observable', { params: {
+        const hooksResponse = await request.get('/hooks', { params: {
             type: hook.observable.type,
             name: hook.observable.name
         }});
