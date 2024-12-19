@@ -80,7 +80,7 @@ test('Actions tab', async ({ page }) => {
 });
 
 test('Configuration tab', async ({ page }) => {
-  const waitResp = async (action, path="/config/values") => {
+  const waitResp = async (action, path="/config") => {
     const response = page.waitForResponse(
       (r) => r.url().endsWith(path)
     );
@@ -88,22 +88,18 @@ test('Configuration tab', async ({ page }) => {
     return await response;
   }
 
+  const getFieldId = (name) => "config_" + name
+
   const fields = [
-    { name: 'tests', value: String(Math.floor(Math.random() * 100)) },
-    { name: 'testn', value: String(Math.floor(Math.random() * 100)) },
-    { name: 'testb', value: Boolean(Math.floor(Math.random() * 2)) }
+    { name: 'gtw', value: String(Math.floor(Math.random() * 100)) },
+    { name: 'test-value', value: String(Math.floor(Math.random() * 100)) },
   ]
 
   const updateBtn = page.getByTestId('configuration')
   waitResp(await updateBtn.click());
 
   for (const { name, value } of fields) {
-    const element = page.getByTestId(name)
-    if (typeof value === 'boolean') {
-      await element.check(value);
-    } else {
-      await element.fill(value);
-    }
+    await page.getByTestId(getFieldId(name)).fill(value);
   }
 
   const res = await waitResp(page.getByTestId("config-save").click());
@@ -111,16 +107,8 @@ test('Configuration tab', async ({ page }) => {
 
   await waitResp(updateBtn.click());
   for (const { name, value } of fields) {
-    const input = page.getByTestId(name);
-    let ex = expect(input, "Config value " + name + " present")
-    if (typeof value === 'boolean') {
-      if (!value) {
-        ex = ex.not
-      }
-      await ex.toBeChecked();
-    } else {
-      await ex.toHaveValue(value);
-    }
+    const input = page.getByTestId(getFieldId(name));
+    await expect(input, "Config value " + name + " present").toHaveValue(value);
   }
 
   page.on('dialog', dialog => dialog.accept());
@@ -128,14 +116,9 @@ test('Configuration tab', async ({ page }) => {
   expect(resDel.ok(), "Config deleted").toBeTruthy();
 
   await waitResp(updateBtn.click());
-  for (const { name, value } of fields) {
-    const input = page.getByTestId(name);
-    const ex = expect(input, "Config value " + name + " clear")
-    if (typeof value === 'boolean') {
-      await ex.not.toBeChecked();
-    } else {
-      await ex.toBeEmpty();
-    }
+  for (const { name } of fields) {
+    const input = page.getByTestId(getFieldId(name));
+    await expect(input, "Config value " + name + " clear").toBeEmpty();
   }
 });
 

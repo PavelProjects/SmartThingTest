@@ -18,7 +18,7 @@ test('Get device info (system, actions, config)', async({ request }) => {
     expect(await actions.json(), "Correct actions format")
         .toEqual(expect.any(Object));
 
-    const config = await request.get('/config/info');
+    const config = await request.get('/config');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Correct config info format")
         .toEqual(expect.any(Object));
@@ -38,27 +38,26 @@ test('Update device name', async ({ request }) => {
 
 test('Test device configuration (add, get, delete)', async({ request }) => {
     const values = {
-        tests: "tehe",
-        testn: 12,
-        testb: true,
+        "gtw": "localhost:8080",
+        "test-value": "ooga;booga",
     }
 
-    const addValues = await request.post('/config/values', { data: values });
+    const addValues = await request.post('/config', { data: values });
     expect(addValues.ok(), "New values added").toBeTruthy();
 
-    const config = await request.get('/config/values');
+    const config = await request.get('/config');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Config contains new values")
         .toEqual(expect.objectContaining(values));
 
     for (const key of Object.keys(values)) {
-        const deleteKey = await request.delete('/config/values', { params: {
+        const deleteKey = await request.delete('/config', { params: {
             name: key
         }});
         expect(deleteKey.ok(), `Value key=${key} removed`).toBeTruthy();
     };
 
-    const deleteWrongKey = await request.delete('/config/values', { params: {
+    const deleteWrongKey = await request.delete('/config', { params: {
         name: "asojfsoifdjgsdf"
     }});
     expect(deleteWrongKey.status()).toEqual(404);
