@@ -18,7 +18,7 @@ test('Get device info (system, actions, config)', async({ request }) => {
     expect(await actions.json(), "Correct actions format")
         .toEqual(expect.any(Object));
 
-    const config = await request.get('/config/info');
+    const config = await request.get('/config');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Correct config info format")
         .toEqual(expect.any(Object));
@@ -38,27 +38,26 @@ test('Update device name', async ({ request }) => {
 
 test('Test device configuration (add, get, delete)', async({ request }) => {
     const values = {
-        tests: "tehe",
-        testn: 12,
-        testb: true,
+        "gtw": "localhost:8080",
+        "test-value": "ooga;booga",
     }
 
-    const addValues = await request.post('/config/values', { data: values });
+    const addValues = await request.post('/config', { data: values });
     expect(addValues.ok(), "New values added").toBeTruthy();
 
-    const config = await request.get('/config/values');
+    const config = await request.get('/config');
     expect(config.ok()).toBeTruthy();
     expect(await config.json(), "Config contains new values")
         .toEqual(expect.objectContaining(values));
 
     for (const key of Object.keys(values)) {
-        const deleteKey = await request.delete('/config/values', { params: {
+        const deleteKey = await request.delete('/config', { params: {
             name: key
         }});
         expect(deleteKey.ok(), `Value key=${key} removed`).toBeTruthy();
     };
 
-    const deleteWrongKey = await request.delete('/config/values', { params: {
+    const deleteWrongKey = await request.delete('/config', { params: {
         name: "asojfsoifdjgsdf"
     }});
     expect(deleteWrongKey.status()).toEqual(404);
@@ -95,20 +94,11 @@ test('Get device sensors', async ({ request }) => {
     const sensors = await request.get('/sensors');
     expect(sensors.ok()).toBeTruthy();
     expect(await sensors.json()).toEqual(expect.any(Object));
-
-    const sensorsTypes = await request.get('/sensors/types');
-    expect(sensorsTypes.ok()).toBeTruthy();
-    expect(await sensorsTypes.json()).toEqual(expect.any(Object));
-});
-
-test('Get device states', async ({ request }) => {
-    const sensors = await request.get('/states');
-    expect(sensors.ok()).toBeTruthy();
-    expect(await sensors.json()).toEqual(expect.any(Object));
 });
 
 test('Test hooks (create, get, update, delete)', async({ request }) => {
-    const templatesResponse = await request.get('/hooks/templates?type=state');
+    const sensor = "wifi"
+    const templatesResponse = await request.get('/hooks/templates?sensor=' + sensor);
     expect(templatesResponse.ok()).toBeTruthy();
     const templates = await templatesResponse.json();
     expect(templates[ACTION_HOOK_TYPE]).not.toBeUndefined();
@@ -118,16 +108,13 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     }));
     const actions = Object.keys(templates[ACTION_HOOK_TYPE].action.values);
 
-    const statesResponse = await request.get('/states');
-    expect(statesResponse.ok()).toBeTruthy();
-    const states = Object.keys(await statesResponse.json());
+    const sensorsResponse = await request.get('/sensors');
+    expect(sensorsResponse.ok()).toBeTruthy();
+    const states = Object.keys(await sensorsResponse.json());
     expect(states.length !== 0).toBeTruthy();
 
     const hook = {
-        observable: {
-            type: "state",
-            name: states[0]
-        },
+        sensor,
         hook: {
             type: ACTION_HOOK_TYPE,
             action: actions[0],
@@ -144,10 +131,7 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     expect(createdId, "Created hook id=" + createdId).not.toBeUndefined();
 
     const getHookById = async (hookId) => {
-        const hooksResponse = await request.get('/hooks/by/observable', { params: {
-            type: hook.observable.type,
-            name: hook.observable.name
-        }});
+        const hooksResponse = await request.get('/hooks', { params: { sensor }});
         expect(hooksResponse.ok()).toBeTruthy();
         const hooks = await hooksResponse.json();
         return hooks.find(({ id }) => id === hookId)
@@ -176,8 +160,7 @@ test('Test hooks (create, get, update, delete)', async({ request }) => {
     );
 
     const deleteResponse = await request.delete('/hooks', { params: {
-        type: hook.observable.type,
-        name: hook.observable.name,
+        sensor,
         id: createdId
     }});
     expect(deleteResponse.ok(), "hook deleted").toBeTruthy();
